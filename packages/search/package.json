@@ -1,0 +1,64 @@
+{
+  "name": "@rosicrucian/search",
+  "version": "0.1.0",
+  "description": "Full-text search for static sites: build a positional index at build time, search it in the browser, link to the matching passage.",
+  "license": "MIT",
+  "homepage": "https://rosicrucian.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rosicrucian-dev/packages.git",
+    "directory": "packages/search"
+  },
+  "keywords": [
+    "search",
+    "full-text",
+    "static-site",
+    "bm25",
+    "inverted-index",
+    "react"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "default": "./dist/react/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "!src/**/*.test.ts"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" README.md",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\" README.md",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^25.7.0",
+    "@types/react": "19.2.14",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "react": "19.2.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.50.0"
+  }
+}

@@ -1,0 +1,46 @@
+name: Release packages
+
+# Publishes the @rosicrucian packages. Changesets keeps a "Version Packages"
+# pull request open while there are pending changesets; merging it runs the
+# publish. Publishing authenticates with npm trusted publishing (OIDC), so no
+# token is stored: each package is registered once on npmjs.com with this
+# repository and workflow file as its trusted publisher.
+#
+# NOT YET IN USE. Until the npm organisation exists and the first version of
+# each package has been published by hand, a package's release is a tarball
+# on a GitHub release, made by a tag (tarball.yml), and this workflow only
+# runs when started by hand. To turn it on: create the org,
+# publish once, register the trusted publisher, then make the trigger
+# `push: branches: [main]`.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency: release-${{ github.ref }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm 11.5 or newer.
+      - run: npm install -g npm@latest
+      - run: npm ci
+      - run: npm test --workspaces --if-present
+      - uses: changesets/action@v1
+        with:
+          publish: npm run release
+          title: 'Version packages'
+          commit: 'Version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

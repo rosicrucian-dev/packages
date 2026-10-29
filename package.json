@@ -1,0 +1,29 @@
+{
+  "name": "rosicrucian",
+  "private": true,
+  "description": "The @rosicrucian packages: open source for the aquarian age.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "format": "prettier --write \"*.md\" \".changeset/*.md\" && npm run format --workspaces --if-present",
+    "format:check": "prettier --check \"*.md\" \".changeset/*.md\" && npm run format:check --workspaces --if-present",
+    "check": "npm run build && npm test && npm run lint && npm run typecheck && npm run format:check",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.8",
+    "prettier": "^3.9.9",
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "@types/react": "19.2.14"
+  }
+}

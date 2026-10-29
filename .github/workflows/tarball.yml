@@ -1,0 +1,56 @@
+# A package's release as a tarball, until the packages are on npm: a tag
+# named <package>@<version> (search@0.1.0) builds and tests that package,
+# packs it as `npm publish` would, and attaches the tarball to a GitHub
+# release of the tag's name. A site then depends on the tarball's address,
+#
+#   "@rosicrucian/search": "https://github.com/rosicrucian-dev/packages/releases/download/search@0.1.0/rosicrucian-search-0.1.0.tgz"
+#
+# and its lockfile records the tarball's hash. This repository names no
+# consumer: each site declares what it depends on, as it will with npm,
+# when the dependency becomes "^0.1.0" and release.yml takes over.
+name: Tarball
+
+on:
+  push:
+    tags: ["*@*"]
+
+permissions:
+  contents: write
+
+jobs:
+  tarball:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: The package and the version, from the tag
+        id: tag
+        run: |
+          name="${GITHUB_REF_NAME%@*}"
+          version="${GITHUB_REF_NAME##*@}"
+          dir="packages/$name"
+          [ -f "$dir/package.json" ] || { echo "::error::no package at $dir"; exit 1; }
+          declared=$(node -p "require('./$dir/package.json').version")
+          [ "$declared" = "$version" ] || { echo "::error::$dir/package.json is $declared, the tag says $version"; exit 1; }
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+
+      - name: Build, test and pack
+        working-directory: ${{ steps.tag.outputs.dir }}
+        run: |
+          npm run build
+          npm test
+          rm -f *.tgz
+          npm pack
+
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" ${{ steps.tag.outputs.dir }}/*.tgz \
+            --title "$GITHUB_REF_NAME" \
+            --notes "The package as \`npm pack\` makes it; install from the tarball's address."
